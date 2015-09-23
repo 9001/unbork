@@ -58,8 +58,12 @@ def sanitize(txt, for_print=False):
 # Iterate through a folder and find files to rename
 def rename(cfg, folder):
 	for name in os.listdir(folder):
+		
+		# mode 1: URL
 		if cfg.mode == Modes.URL:
 			fixed = urllib.unquote(name)
+		
+		# mode 2: VIA
 		elif cfg.mode == Modes.VIA:
 			try:
 				reg = cfg.via.search(name)
@@ -77,6 +81,8 @@ def rename(cfg, folder):
 				continue
 		else:
 			raise Exception('Unknown conversion mode [%s]' % cfg.mode)
+		
+		# additional modes here
 		
 		fixed = sanitize(fixed)
 		if fixed == name:
@@ -120,6 +126,8 @@ elif len(sys.argv) == 4 and sys.argv[2] == 'via':
 	cfg.via = re.compile(cs, flags=re.U)
 	print cs
 
+# Check if mode n (add yours here)
+
 else:
 	print
 	print '\x1b[0;33mUsage:\x1b[0m'
@@ -140,8 +148,6 @@ else:
 	print '   \x1b[1munbork.py cp932 via cp437\x1b[0m'
 	print '   (\x1b[1;31mëFæ╜ôcâqâJâï - ì≈ù¼é╡.mp3\x1b[0m) => (\x1b[1;32m宇多田ヒカル - 桜流し.mp3\x1b[0m)'
 	sys.exit(1)
-
-
 
 print
 print "Listing files. For each file, select [Y]es [N]o [Q]uit."
