@@ -96,8 +96,8 @@ def rename(cfg, folder):
 def iterate(cfg, folder):
 	rename(cfg, folder)
 	for subfolder in os.listdir(folder):
-		if os.path.isdir(subfolder):
-			path = os.path.join(folder, subfolder)
+		path = os.path.join(folder, subfolder)
+		if os.path.isdir(path):
 			print "Entering [" + sanitize(path, True) + "]"
 			iterate(cfg, path)
 
@@ -148,3 +148,4 @@ print "Listing files. For each file, select [Y]es [N]o [Q]uit."
 print
 iterate(cfg, os.getcwd())
 print 'done'
+
