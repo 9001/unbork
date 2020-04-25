@@ -80,19 +80,31 @@ def enum(**enums):
 Modes = enum(URL=1, VIA=2)
 
 
-def sanitize(txt, for_print=False):
-    """
-    Remove ANSI escape codes and newlines
-    Optionally hilight changes when displaying on a VT100 term
-    """
-    pre = suf = b""
+def sanitize(txt, for_print=True):
+    """strip unprintables"""
+    pre = suf = ""
     if for_print:
-        pre = b"\x1b[1;31m"
-        suf = b"\x1b[0m"
-    txt = txt.replace(b"\x1b", pre + b"<ESC>" + suf)
-    txt = txt.replace(b"\x0d", pre + b"<CR>" + suf)
-    txt = txt.replace(b"\x0a", pre + b"<LF>" + suf)
-    return txt
+        pre = "\x1b[1;31m"
+        suf = "\x1b[0m"
+
+    if PY2:
+        f = unichr
+    else:
+        f = chr
+
+    bads = {}
+    for r in [range(0, 32), range(127, 160)]:
+        for n in r:
+            bads[f(n)] = "<{0:02x}>".format(n)
+
+    ret = ""
+    for ch in txt:
+        if ch in bads:
+            ret += pre + bads[ch] + suf
+        else:
+            ret += ch
+
+    return ret
 
 
 def rename(cfg, folder):
@@ -116,12 +128,11 @@ def rename(cfg, folder):
         else:
             raise Exception("Unknown conversion mode [%s]" % cfg.mode)
 
-        fixed = sanitize(fixed)
         if fixed == name:
             continue
 
         msg = "({0}) => (\x1b[1;32m{1}\x1b[0m) ".format(
-            sanitize(name, True).decode("utf-8", "replace"), fixed.decode("utf-8")
+            sanitize(name.decode("utf-8", "replace")), sanitize(fixed.decode("utf-8"))
         )
         eprint(msg, end="")
         ch = getch()
@@ -140,7 +151,7 @@ def iterate(cfg, folder):
     for subfolder in os.listdir(folder):
         path = os.path.join(folder, subfolder)
         if os.path.isdir(path):
-            eprint("Entering [" + sanitize(path, True) + "]")
+            eprint("Entering [{0}]".format(sanitize(path.decode("utf-8", "replace"))))
             iterate(cfg, path)
 
 
